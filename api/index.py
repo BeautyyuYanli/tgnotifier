@@ -24,7 +24,8 @@ def webhook():
         return "Unsupported Media Type", 415
     if request.method == 'POST':
         if request.json.get("callback_query"):
-            return notifier.confirm_note(request.json)
+            notifier.confirm_note(request.json)
+    return "OK", 200
 
 
 @app.route('/send_note', methods=['POST'])
@@ -53,3 +54,10 @@ def consume_notes():
         return "Unsupported Media Type", 415
     if request.method == 'POST':
         return notifier.consume_notes(request.json)
+
+
+@app.route('/refresh_webhook')
+def refresh_webhook():
+    res = agent.set_webhook(self_token=self_token)
+    print(res.content)
+    return "OK", 200
