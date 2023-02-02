@@ -1,8 +1,6 @@
-from flask import Flask, request
-from modules import hello
 import json
 import os
-
+from flask import Flask, request
 import modules.agent as agent
 import modules.notifier as notifier
 
