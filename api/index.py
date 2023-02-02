@@ -58,6 +58,5 @@ def consume_notes():
 
 @app.route('/refresh_webhook')
 def refresh_webhook():
-    res = agent.set_webhook(self_token=self_token)
-    print(res.content)
+    agent.set_webhook(self_token=self_token)
     return "OK", 200

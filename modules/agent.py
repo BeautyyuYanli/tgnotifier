@@ -23,7 +23,9 @@ class Agent:
             "allowed_updates": json.dumps(allow_updates),
             "secret_token": self_token
         }
-        return self.session.post(url, data=data)
+        res = self.session.post(url, data=data)
+        print(res)
+        return res
 
     def answer_callback_query(
             self,
