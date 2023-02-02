@@ -15,6 +15,8 @@ class Agent:
         self_token: str,
         allow_updates: list[str] = ["callback_query"]
     ) -> requests.Response:
+        self.session.get(
+            f"https://api.telegram.org/bot{self.bot_token}/deleteWebhook")
         url = f"https://api.telegram.org/bot{self.bot_token}/setWebhook"
         data = {
             "url": self.callback_url,
