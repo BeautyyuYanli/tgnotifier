@@ -30,8 +30,9 @@ class Notes:
 
 
 class Notifier:
-    def __init__(self, agent: agent.Agent) -> None:
+    def __init__(self, agent: agent.Agent, chat_id: str) -> None:
         self.agent = agent
+        self.chat_id = chat_id
         self.notes = Notes()
 
     def send_note(self, obj: object) -> Tuple[object, int]:
@@ -42,10 +43,11 @@ class Notifier:
         options = obj.get("options")
         if not options:
             reply_markup = None
-            self.agent.send_message(message)
+            self.agent.send_message(self.chat_id, message)
         else:
             reply_markup = {"inline_keyboard": options}
-            res = self.agent.send_message(message, reply_markup=reply_markup)
+            res = self.agent.send_message(
+                self.chat_id, message, reply_markup=reply_markup)
             obj["status"] = "pending"
             msgid = res.json()["result"]["message_id"]
             self.notes[msgid] = obj
@@ -60,6 +62,7 @@ class Notifier:
             return "Bad Request: missing field. The webhook should only be called by Telegram server", 400
         self.agent.answer_callback_query(qryid)
         self.agent.edit_message_replymarkup(
+            self.chat_id,
             msgid,
             {"inline_keyboard": [
                 [{"text": select, "callback_data": select}]]}

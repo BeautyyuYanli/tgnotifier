@@ -4,22 +4,22 @@ import requests
 
 
 class Agent:
-    def __init__(self) -> None:
+    def __init__(self, self_token: str) -> None:
         self.bot_token = os.getenv("BOT_TOKEN")
-        self.chat_id = os.getenv("CHAT_ID")
         self.session = requests.Session()
         self.callback_url = os.getenv("CALLBACK_URL")
-        self.set_webhook()
+        self.set_webhook(self_token=self_token)
 
     def set_webhook(
         self,
-        allow_updates: list[str] = ["callback_query", "channel_post"]
+        self_token: str,
+        allow_updates: list[str] = ["callback_query"]
     ) -> requests.Response:
         url = f"https://api.telegram.org/bot{self.bot_token}/setWebhook"
         data = {
             "url": self.callback_url,
             "allowed_updates": json.dumps(allow_updates),
-            "secret_token": os.getenv("SELF_TOKEN")
+            "secret_token": self_token
         }
         return self.session.post(url, data=data)
 
@@ -40,6 +40,7 @@ class Agent:
 
     def send_message(
         self,
+        chat_id: str,
         message: str,
         parse_mode: "None | str" = None,
         reply_markup: "None | object" = None,
@@ -47,7 +48,7 @@ class Agent:
     ) -> requests.Response:
         url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
         data = {
-            "chat_id": self.chat_id,
+            "chat_id": chat_id,
             "text": message
         }
         if parse_mode:
@@ -61,12 +62,13 @@ class Agent:
 
     def edit_message_replymarkup(
         self,
+        chat_id: str,
         message_id: int,
         reply_markup: "None | object" = None,
     ) -> requests.Response:
         url = f"https://api.telegram.org/bot{self.bot_token}/editMessageReplyMarkup"
         data = {
-            "chat_id": self.chat_id,
+            "chat_id": chat_id,
             "message_id": message_id,
             "reply_markup": ""
         }
