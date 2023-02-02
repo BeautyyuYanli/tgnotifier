@@ -26,7 +26,7 @@ class Agent:
     def answer_callback_query(
             self,
             callback_query_id: str,
-            text: str | None = None,
+            text: "str | None" = None,
             show_alert: bool = False
     ) -> requests.Response:
         apiurl = f"https://api.telegram.org/bot{self.bot_token}/answerCallbackQuery"
@@ -41,9 +41,9 @@ class Agent:
     def send_message(
         self,
         message: str,
-        parse_mode: None | str = None,
-        reply_markup: None | object = None,
-        additional_data: None | object = None
+        parse_mode: "None | str" = None,
+        reply_markup: "None | object" = None,
+        additional_data: "None | object" = None
     ) -> requests.Response:
         url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
         data = {
@@ -62,7 +62,7 @@ class Agent:
     def edit_message_replymarkup(
         self,
         message_id: int,
-        reply_markup: None | object = None,
+        reply_markup: "None | object" = None,
     ) -> requests.Response:
         url = f"https://api.telegram.org/bot{self.bot_token}/editMessageReplyMarkup"
         data = {
