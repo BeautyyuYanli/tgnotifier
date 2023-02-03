@@ -44,6 +44,7 @@ class Notifier:
         if not options:
             reply_markup = None
             self.agent.send_message(self.chat_id, message)
+            return {"ok": "OK"}, 200
         else:
             reply_markup = {"inline_keyboard": options}
             res = self.agent.send_message(
@@ -51,7 +52,7 @@ class Notifier:
             obj["status"] = "pending"
             msgid = res.json()["result"]["message_id"]
             self.notes[msgid] = obj
-        return {"message_id": msgid}, 200
+            return {"ok": "OK", "message_id": msgid}, 200
 
     def confirm_note(self, obj: object) -> Tuple[object, int]:
         try:
