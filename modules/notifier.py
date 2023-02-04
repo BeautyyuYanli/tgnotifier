@@ -1,8 +1,9 @@
 from typing import List, Tuple
-import modules.agent as agent
+from modules.agent import Agent
 import os
 
 
+# Array of notes stored in a notifier
 class Notes:
     def __init__(self, maxlen: int = int(os.getenv("MAXNOTES"))) -> None:
         self.maxlen = maxlen
@@ -30,7 +31,7 @@ class Notes:
 
 
 class Notifier:
-    def __init__(self, agent: agent.Agent, chat_id: str) -> None:
+    def __init__(self, agent: Agent, chat_id: str) -> None:
         self.agent = agent
         self.chat_id = chat_id
         self.notes = Notes()

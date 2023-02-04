@@ -3,28 +3,42 @@ import json
 import requests
 
 
+# Agent of telegram bot api
 class Agent:
-    def __init__(self, self_token: str) -> None:
-        self.bot_token = os.getenv("BOT_TOKEN")
+    def __init__(self, token: str, callback_url: str) -> None:
+        self.bot_token = token
+        [self.id, self.token] = token.split(":")
+        self.id = int(self.id)
         self.session = requests.Session()
-        self.callback_url = os.getenv("CALLBACK_URL")
-        self.set_webhook(self_token=self_token)
+        self.callback_url = callback_url
+        self.set_commands()
+        self.set_webhook(["callback_query"])
+
+    def set_commands(self, commands: "None | list[dict]" = None):
+        self.session.get(
+            f"https://api.telegram.org/bot{self.bot_token}/deleteMyCommands")
+        if commands:
+            self.session.post(
+                url=f"https://api.telegram.org/bot{self.bot_token}/setMyCommands",
+                json={
+                    "commands": commands
+                }
+            )
 
     def set_webhook(
         self,
-        self_token: str,
-        allow_updates: list[str] = ["callback_query"]
+        allow_updates: list[str]
     ) -> requests.Response:
         self.session.get(
             f"https://api.telegram.org/bot{self.bot_token}/deleteWebhook")
         url = f"https://api.telegram.org/bot{self.bot_token}/setWebhook"
-        data = {
+        json = {
             "url": self.callback_url,
-            "allowed_updates": json.dumps(allow_updates),
-            "secret_token": self_token
+            "allowed_updates": allow_updates,
+            "secret_token": self.token
         }
-        res = self.session.post(url, data=data)
-        print(res)
+        res = self.session.post(url, json=json)
+        print(res.content)
         return res
 
     def answer_callback_query(
