@@ -11,19 +11,18 @@ class Agent:
         self.id = int(self.id)
         self.session = requests.Session()
         self.callback_url = callback_url
-        self.set_commands()
-        self.set_webhook(["callback_query"])
 
     def set_commands(self, commands: "None | list[dict]" = None):
         self.session.get(
             f"https://api.telegram.org/bot{self.bot_token}/deleteMyCommands")
         if commands:
-            self.session.post(
+            res = self.session.post(
                 url=f"https://api.telegram.org/bot{self.bot_token}/setMyCommands",
                 json={
                     "commands": commands
                 }
             )
+            return res
 
     def set_webhook(
         self,
@@ -38,7 +37,6 @@ class Agent:
             "secret_token": self.token
         }
         res = self.session.post(url, json=json)
-        print(res.content)
         return res
 
     def answer_callback_query(

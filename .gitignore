@@ -13,3 +13,4 @@ env.bak/
 venv.bak/ 
 
 test.py
+data/
