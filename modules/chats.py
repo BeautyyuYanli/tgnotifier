@@ -29,8 +29,11 @@ class Chats():
             self.storage[chat_id] = t
         return t
 
-    def get_token(self, chat_id: int) -> str:
-        return self.redis.hget(self.token, chat_id).decode("ascii")
+    def get_token(self, chat_id: int) -> "str | None":
+        t = self.redis.hget(self.token, chat_id)
+        if t:
+            return t.decode("ascii")
+        return None
 
     def create_token(self, chat_id: int) -> str:
         token = str(uuid.uuid4())
