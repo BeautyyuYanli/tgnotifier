@@ -18,7 +18,7 @@ class Notes:
     def __getitem__(self, key: str) -> object:
         return self.redis.json().get(self.val, Path(f"$.{key}"))[0]
 
-    def get_note(self, key: int) -> object | None:
+    def get_note(self, key: int) -> "object | None":
         try:
             return self[str(key)]
         except Exception:
