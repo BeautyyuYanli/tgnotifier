@@ -3,50 +3,34 @@ from modules.agent import Agent
 import os
 from redis import Redis
 from redis.commands.json.path import Path
+import json
 
 
 # Array of notes stored in a notifier
 class Notes:
     def __init__(self, chat_id: int, redis: Redis, maxlen: int = int(os.getenv("MAXNOTES"))) -> None:
         self.redis = redis
-        self.val = f"chats:{chat_id}:notes.val"
-        self.id = f"chats:{chat_id}:notes.id"
+        self.key = f"chats:{chat_id}:notes"
         self.maxlen = maxlen
-        if redis.exists(self.val) == 0:
-            redis.json().set(self.val, Path("$"), {})
-
-    def __getitem__(self, key: str) -> object:
-        return self.redis.json().get(self.val, Path(f"$.{key}"))[0]
 
     def get_note(self, key: int) -> "object | None":
         try:
-            return self[str(key)]
+            return json.loads(self.redis.zrange(self.key, key, key, byscore=True)[0])
         except Exception:
             return None
 
     def get_all_notes(self) -> object:
-        return self.redis.json().get(self.val, Path("$"))[0]
-
-    def __setitem__(self, key: str, value: object) -> None:
-        self.redis.json().set(self.val, Path(f"$.{key}"), value)
+        t = self.redis.zrange(self.key, 0, -1, withscores=True)
+        t = {int(i[1]): json.loads(i[0]) for i in t}
+        return t
 
     def set_note(self, key: int, value: object) -> None:
-        if self.get_note(key) is None:
-            len = self.redis.json().objlen(self.val, Path("$"))[0]
-            if len >= self.maxlen:
-                llen = self.redis.llen(self.id)
-                for _ in range(llen):
-                    k = int(self.redis.rpop(self.id))
-                    v = self.get_note(k)
-                    if v != None:
-                        self.del_note(k)
-                        break
-        self[str(key)] = value
-        self.redis.lpush(self.id, key)
+        self.del_note(key)
+        self.redis.zadd(self.key, {json.dumps(value): key})
+        self.redis.zremrangebyrank(self.key, 0, -self.maxlen - 1)
 
     def del_note(self, key: int) -> None:
-        key = str(key)
-        self.redis.json().delete(self.val, Path(f"$.{key}"))
+        self.redis.zremrangebyscore(self.key, key, key)
 
 
 class Notifier:
@@ -70,6 +54,7 @@ class Notifier:
                 self.chat_id, message, reply_markup=reply_markup)
             obj["status"] = "pending"
             msgid = res.json()["result"]["message_id"]
+            obj["id"] = msgid
             self.notes.set_note(msgid, obj)
             return {"ok": "OK", "message_id": msgid}, 200
 
@@ -87,11 +72,13 @@ class Notifier:
             {"inline_keyboard": [
                 [{"text": select, "callback_data": select}]]}
         )
-        if self.notes.get_note(msgid) is None:
+        note = self.notes.get_note(msgid)
+        if note is None:
             print(f"Warning: message {msgid} not found")
         else:
-            self.notes[f"{msgid}.status"] = "confirmed"
-            self.notes[f"{msgid}.select"] = select
+            note["status"] = "confirmed"
+            note["select"] = select
+            self.notes.set_note(msgid, note)
         return "OK", 200
 
     def consume_notes(self, obj: object) -> Tuple[object, int]:
