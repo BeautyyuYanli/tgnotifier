@@ -48,6 +48,13 @@ def webhook():
         return "Unsupported Media Type", 415
     if request.method == 'POST':
         obj = request.json
+        update_id = redis.get("update_id")
+        if update_id == None:
+            update_id = -1
+        if obj.get("update_id") <= update_id:
+            return "OK", 200
+        else:
+            redis.set("update_id", obj.get("update_id"), ex=60*60*24*7)
         msg = obj.get("message")
         if msg:
             chat_id = msg["chat"]["id"]
