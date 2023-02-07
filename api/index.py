@@ -49,6 +49,7 @@ def webhook():
         return "Unsupported Media Type", 415
     if request.method == 'POST':
         obj = request.json
+        global update_id
         if obj.get("update_id") <= update_id:
             return "OK", 200
         else:
