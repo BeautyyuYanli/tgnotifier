@@ -54,8 +54,8 @@ def webhook():
         continue_flag = True
         id = Lock.acquire(redis, "update_id", 10)
         update_id = obj.get("update_id", -1)
-        last_update_id = int(redis.get("update_id"))
-        if last_update_id is not None and last_update_id >= update_id:
+        last_update_id = redis.get("update_id")
+        if last_update_id is not None and int(last_update_id) >= update_id:
             continue_flag = False
         redis.set("update_id", update_id, ex=60*60*24*7)
         Lock.release(redis, "update_id", id)
