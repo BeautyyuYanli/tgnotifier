@@ -45,13 +45,14 @@ class Notifier:
         except KeyError:
             return "Bad Request: missing field 'message'", 400
         options = obj.get("options")
+        additional_data = obj.get("additional_data")
         if not options:
             self.agent.send_message(self.chat_id, message)
             return {"ok": "OK"}, 200
         else:
             reply_markup = {"inline_keyboard": options}
             res = self.agent.send_message(
-                self.chat_id, message, reply_markup=reply_markup)
+                self.chat_id, message, reply_markup=reply_markup, additional_data=additional_data)
             obj["status"] = "pending"
             msgid = res.json()["result"]["message_id"]
             obj["id"] = msgid

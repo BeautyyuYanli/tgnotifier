@@ -71,7 +71,8 @@ def webhook():
             # case: new_token
             if text == "/new_token":
                 t = chats.create_token(chat_id)
-                agent.send_message(chat_id, f"New token created: {t}")
+                agent.send_message(
+                    chat_id, f"New token created:\n\n`{chat_id}:{t}`", parse_mode="MarkdownV2")
             else:
                 agent.send_message(chat_id, "Unknown command")
             return "OK", 200
