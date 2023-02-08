@@ -16,6 +16,4 @@ test.py
 a.py
 b.py
 docker-compose.yml
-update_id
-update_id.lock
 data/

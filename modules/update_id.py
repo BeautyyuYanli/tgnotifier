@@ -17,7 +17,7 @@ class UpdateID:
                 with open("update_id", "w") as f:
                     f.write("-1")
 
-    def compare(self, b) -> bool:
+    def compare(self, b: int) -> bool:
         with FileLock("update_id.lock", timeout=10):
             with open("update_id", "r+t") as f:
                 last_update_id = int(f.read())
