@@ -1,23 +1,49 @@
+from typing import Tuple
 from modules.chats import Chats
 from modules.agent import Agent
+from flask import Request
 
 
-def for_api(origin_token: str, chats: Chats) -> "str | None":
-    try:
-        [chat_id, chat_token] = origin_token.split(':')
-        chat_id = int(chat_id)
-    except Exception as e:
-        return None
-    else:
-        if chats.get_token(chat_id) == chat_token:
-            return chat_id
-        else:
+class Auth:
+    """header checker
+    """
+    def for_api(request: Request, chats: Chats) -> "int | Tuple[str, int]":
+        """authentications for api call
+
+        return chat_id if token is valid, else return Flask response
+        """
+        if not request.headers.get("Content-Type") == "application/json":
+            return "Unsupported Media Type", 415
+        origin_token = request.headers.get("X-TGNotifier-ChatToken")
+        try:
+            [chat_id, chat_token] = origin_token.split(':')
+            chat_id = int(chat_id)
+        except Exception as e:
             return None
+        else:
+            if chats.get_token(chat_id) == chat_token:
+                return chat_id
+            else:
+                return "Unauthorized", 401
 
+    def for_admin(request: Request, token: str) -> "None | Tuple[str, int]":
+        """authentications for admin call
 
-def for_admin(get_token: str, self_token: str) -> bool:
-    return get_token == self_token
+        return None if token is valid, else return Flask response
+        """
+        if request.headers.get("X-TGNotifier-BotToken") == token:
+            return None
+        else:
+            return "Unauthorized", 401
 
+    def for_webhook(request: Request, agent: Agent) -> "None | Tuple[str, int]":
+        """authentications for webhook
 
-def for_callback(get_token: str, agent: Agent):
-    return get_token == agent.token
+        return None if token is valid, else return Flask response
+        """
+        if not request.headers.get("Content-Type") == "application/json":
+            return "Unsupported Media Type", 415
+        if request.headers.get("X-Telegram-Bot-Api-Secret-Token") == agent.token:
+            return None
+        else:
+            return "Unauthorized", 401
