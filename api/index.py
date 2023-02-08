@@ -4,7 +4,7 @@ from flask import Flask, request
 from modules.auth import Auth
 from modules.agent import Agent
 from modules.chats import Chats
-from modules.update_id import UpdateID
+from modules.redis_lock import Lock
 
 app = Flask(__name__)
 redis = Redis(
@@ -15,7 +15,6 @@ redis = Redis(
 )
 agent = Agent(os.getenv("BOT_TOKEN"), os.getenv("CALLBACK_URL"))
 chats = Chats(agent, redis)
-update_id = UpdateID()
 
 
 @ app.route('/')
@@ -52,7 +51,16 @@ def webhook():
     if request.method == 'POST':
         obj = request.json
         # compare update_id
-        if not update_id.compare(obj.get("update_id")):
+        continue_flag = True
+        id = Lock.acquire(redis, "update_id", 10)
+        update_id = obj.get("update_id", -1)
+        last_update_id = int(redis.get("update_id"))
+        if last_update_id is not None and last_update_id >= update_id:
+            continue_flag = False
+        redis.set("update_id", update_id, ex=60*60*24*7)
+        Lock.release(redis, "update_id", id)
+
+        if not continue_flag:
             return "OK", 200
 
         # case: message
