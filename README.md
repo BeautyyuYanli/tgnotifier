@@ -16,3 +16,6 @@ Use Telegram bot as a notification service.
 5. `docker-compose up`
 
 You can also deploy the project to Vercel.
+
+## Other
+The program is distributed under GPLv3, see [LICENSE](LICENSE)
