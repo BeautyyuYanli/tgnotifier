@@ -1,0 +1,25 @@
+version: '3'
+services:
+  redis:
+    image: redis/redis-stack-server:latest
+    restart: always
+    volumes:
+      - ./data:/data
+  server:
+    image: python:3.11
+    command: sh -c "pip install -r requirements.txt && pip install waitress && python -m waitress api.index:app"
+    restart: always
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - 8080:8080
+    environment:
+      - BOT_TOKEN=aaaaaa:bbbbbbbbbb
+      - CALLBACK_URL=https://your.domain:8080/webhook
+      - CHAT_TOKEN=ccccccc:ddddddddddd
+      - MAXNOTES=64
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_PASSWORD=
